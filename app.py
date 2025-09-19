@@ -68,9 +68,9 @@ if page == "欢迎":
     st.markdown('<h1 class="main-header">鱼疾智鉴</h1>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">基于深度学习和生成式人工智能的多维度鱼类养殖助手</p>', unsafe_allow_html=True)
     
-    # 显示图片
+    # 显示图片 - 已替换为您提供的图片
     try:
-        st.image("5fee78b75940ba154c648cdd715ec0d0.jpg", use_column_width=True)
+        st.image("20250919185006_1543_32.jpg", use_column_width=True)
     except:
         st.info("图片加载失败，请确保图片文件存在")
     
@@ -210,7 +210,7 @@ elif page == "问答助手":
                             "messages": [
                                 {
                                     "role": "system",
-                                    "content": "你是一个鱼类疾病专家，专门回答关于鱼类健康、疾病治疗和预防的问题。请提供专业、准确的建议。"
+                                    "content": "你是一个鱼类疾病专家，专门回答关于鱼类健康、疾病治疗和预防的问题。请提供专业、准确的建议."
                                 },
                                 {
                                     "role": "user",
