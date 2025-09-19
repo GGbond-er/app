@@ -8,7 +8,7 @@ import os
 
 # 设置页面配置
 st.set_page_config(
-    page_title="鱼疾智鉴",
+    page_title="渔康智鉴",
     page_icon="🐟",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -58,6 +58,48 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# 调用大模型API的函数
+def call_qwen_api(prompt):
+    try:
+        # 通义千问API调用
+        api_key = "sk-23596706e0104528b11ae1c28802831d"
+        url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": "qwen-turbo",
+            "input": {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "你是一个鱼类疾病专家，专门回答关于鱼类健康、疾病治疗和预防的问题。请提供专业、准确的建议。"
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ]
+            },
+            "parameters": {
+                "result_format": "message"
+            }
+        }
+        
+        response = requests.post(url, headers=headers, json=data)
+        result = response.json()
+        
+        if "output" in result and "choices" in result["output"]:
+            return result["output"]["choices"][0]["message"]["content"]
+        else:
+            return "获取回答时出错，请检查API密钥或网络连接"
+            
+    except Exception as e:
+        return f"调用API时出错: {str(e)}"
+
 # 侧边栏导航
 st.sidebar.title("导航")
 page = st.sidebar.radio("选择页面", ["欢迎", "数据查询", "问答助手"])
@@ -65,7 +107,7 @@ page = st.sidebar.radio("选择页面", ["欢迎", "数据查询", "问答助手
 # 主内容区域
 if page == "欢迎":
     # 标题
-    st.markdown('<h1 class="main-header">鱼疾智鉴</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">渔康智鉴</h1>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">基于深度学习和生成式人工智能的多维度鱼类养殖助手</p>', unsafe_allow_html=True)
     
     # 显示图片 - 已替换为您提供的图片
@@ -159,25 +201,37 @@ elif page == "问答助手":
     
     with col1:
         if st.button("草鱼患溃疡病如何治疗？", key="q1"):
-            st.session_state.messages.append({"role": "user", "content": "草鱼患溃疡病如何治疗？"})
-            # 自动回答
-            st.session_state.messages.append({"role": "assistant", "content": "草鱼溃疡病治疗建议：1. 隔离病鱼；2. 使用5%盐水浸泡10-15分钟；3. 水体内添加适量抗生素；4. 改善水质，增加氧气供应。"})
+            question = "草鱼患溃疡病如何治疗？"
+            st.session_state.messages.append({"role": "user", "content": question})
+            # 调用大模型API获取答案
+            with st.spinner("思考中..."):
+                answer = call_qwen_api(question)
+                st.session_state.messages.append({"role": "assistant", "content": answer})
             
         if st.button("鲢鱼同时患眼部病变、鳍部病变如何治疗？", key="q2"):
-            st.session_state.messages.append({"role": "user", "content": "鲢鱼同时患眼部病变、鳍部病变如何治疗？"})
-            # 自动回答
-            st.session_state.messages.append({"role": "assistant", "content": "鲢鱼眼部和鳍部病变综合治疗：1. 使用0.3-0.5mg/L的二氧化氯全池泼洒；2. 饲料中添加维生素C和抗生素；3. 提高水温至适宜范围；4. 定期换水保持水质清洁。"})
+            question = "鲢鱼同时患眼部病变、鳍部病变如何治疗？"
+            st.session_state.messages.append({"role": "user", "content": question})
+            # 调用大模型API获取答案
+            with st.spinner("思考中..."):
+                answer = call_qwen_api(question)
+                st.session_state.messages.append({"role": "assistant", "content": answer})
     
     with col2:
         if st.button("幼苗期鳙鱼患溃疡病如何治疗？", key="q3"):
-            st.session_state.messages.append({"role": "user", "content": "幼苗期鳙鱼患溃疡病如何治疗？"})
-            # 自动回答
-            st.session_state.messages.append({"role": "assistant", "content": "幼苗期鳙鱼溃疡病需谨慎处理：1. 使用低浓度(3%)盐水短时间浸泡；2. 水体内添加专用鱼药，按说明减半使用；3. 增加水体溶氧量；4. 少量多次投喂高品质饲料。"})
+            question = "幼苗期鳙鱼患溃疡病如何治疗？"
+            st.session_state.messages.append({"role": "user", "content": question})
+            # 调用大模型API获取答案
+            with st.spinner("思考中..."):
+                answer = call_qwen_api(question)
+                st.session_state.messages.append({"role": "assistant", "content": answer})
             
         if st.button("当鱼出现腐烂鳃时如何快速治疗？", key="q4"):
-            st.session_state.messages.append({"role": "user", "content": "当鱼出现腐烂鳃时如何快速治疗？"})
-            # 自动回答
-            st.session_state.messages.append({"role": "assistant", "content": "腐烂鳃急效处理：1. 立即隔离病鱼；2. 使用0.5%盐水和适量高锰酸钾溶液浸泡15分钟；3. 全池泼洒杀菌剂；4. 加强过滤系统，增加水体循环。"})
+            question = "当鱼出现腐烂鳃时如何快速治疗？"
+            st.session_state.messages.append({"role": "user", "content": question})
+            # 调用大模型API获取答案
+            with st.spinner("思考中..."):
+                answer = call_qwen_api(question)
+                st.session_state.messages.append({"role": "assistant", "content": answer})
     
     # 显示聊天记录
     st.markdown("### 对话记录")
@@ -191,69 +245,12 @@ elif page == "问答助手":
         with st.chat_message("user"):
             st.markdown(prompt)
         
-        # 调用通义千问API
+        # 调用大模型API
         with st.chat_message("assistant"):
             with st.spinner("思考中..."):
-                try:
-                    # 通义千问API调用
-                    api_key = "sk-23596706e0104528b11ae1c28802831d"
-                    url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
-                    
-                    headers = {
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json"
-                    }
-                    
-                    data = {
-                        "model": "qwen-turbo",
-                        "input": {
-                            "messages": [
-                                {
-                                    "role": "system",
-                                    "content": "你是一个鱼类疾病专家，专门回答关于鱼类健康、疾病治疗和预防的问题。请提供专业、准确的建议."
-                                },
-                                {
-                                    "role": "user",
-                                    "content": prompt
-                                }
-                            ]
-                        },
-                        "parameters": {
-                            "result_format": "message"
-                        }
-                    }
-                    
-                    response = requests.post(url, headers=headers, json=data)
-                    result = response.json()
-                    
-                    if "output" in result and "choices" in result["output"]:
-                        assistant_reply = result["output"]["choices"][0]["message"]["content"]
-                        st.markdown(assistant_reply)
-                        st.session_state.messages.append({"role": "assistant", "content": assistant_reply})
-                    else:
-                        st.error("获取回答时出错，请检查API密钥或网络连接")
-                        # 提供默认回答
-                        default_reply = "根据您的问题，建议采取以下措施：1. 隔离患病鱼类；2. 改善水质条件；3. 使用适当的鱼类药物治疗；4. 咨询专业鱼类疾病专家获取具体治疗方案。"
-                        st.markdown(default_reply)
-                        st.session_state.messages.append({"role": "assistant", "content": default_reply})
-                        
-                except Exception as e:
-                    st.error(f"调用API时出错: {str(e)}")
-                    # 模拟回复
-                    sample_replies = {
-                        "草鱼患溃疡病如何治疗？": "草鱼溃疡病治疗建议：1. 隔离病鱼；2. 使用5%盐水浸泡10-15分钟；3. 水体内添加适量抗生素；4. 改善水质，增加氧气供应。",
-                        "鲢鱼同时患眼部病变、鳍部病变如何治疗？": "鲢鱼眼部和鳍部病变综合治疗：1. 使用0.3-0.5mg/L的二氧化氯全池泼洒；2. 饲料中添加维生素C和抗生素；3. 提高水温至适宜范围；4. 定期换水保持水质清洁。",
-                        "幼苗期鳙鱼患溃疡病如何治疗？": "幼苗期鳙鱼溃疡病需谨慎处理：1. 使用低浓度(3%)盐水短时间浸泡；2. 水体内添加专用鱼药，按说明减半使用；3. 增加水体溶氧量；4. 少量多次投喂高品质饲料。",
-                        "当鱼出现腐烂鳃时如何快速治疗？": "腐烂鳃急效处理：1. 立即隔离病鱼；2. 使用0.5%盐水和适量高锰酸钾溶液浸泡15分钟；3. 全池泼洒杀菌剂；4. 加强过滤系统，增加水体循环。"
-                    }
-                    
-                    if prompt in sample_replies:
-                        reply = sample_replies[prompt]
-                    else:
-                        reply = "根据您的问题，建议采取以下措施：1. 隔离患病鱼类；2. 改善水质条件；3. 使用适当的鱼类药物治疗；4. 咨询专业鱼类疾病专家获取具体治疗方案。"
-                    
-                    st.markdown(reply)
-                    st.session_state.messages.append({"role": "assistant", "content": reply})
+                answer = call_qwen_api(prompt)
+                st.markdown(answer)
+                st.session_state.messages.append({"role": "assistant", "content": answer})
     
     # 重置会话按钮
     if st.button("重置会话"):
