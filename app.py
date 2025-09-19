@@ -1,22 +1,10 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
 import requests
 import json
 import os
-
-# 检查是否在 Streamlit Cloud 上运行
-ON_STREAMLIT_CLOUD = os.getenv('IS_STREAMLIT_CLOUD') is not None
-
-# 设置中文字体支持 - 仅当不在 Streamlit Cloud 上运行时才设置
-if not ON_STREAMLIT_CLOUD:
-    try:
-        plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-        plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
-    except:
-        pass  # 如果字体设置失败，继续执行
 
 # 设置页面配置
 st.set_page_config(
@@ -129,42 +117,34 @@ elif page == "数据查询":
         
         with col1:
             st.subheader("鱼类健康状况分布（柱状图）")
-            fig, ax = plt.subplots(figsize=(10, 6))
-            bars = ax.bar(categories, values, color=['green', 'red', 'orange', 'blue', 'purple'])
-            ax.set_ylabel('数量')
-            ax.set_title('鱼类健康状况分布')
-            plt.xticks(rotation=45)
+            # 使用 Streamlit 内置图表
+            chart_data = pd.DataFrame({
+                '类别': categories,
+                '数量': values
+            })
+            st.bar_chart(chart_data.set_index('类别'))
             
-            # 在柱子上添加数值标签
-            for bar, value in zip(bars, values):
-                height = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2, height + 0.5,
-                        f'{int(value)}', ha='center', va='bottom', fontsize=10)
-            
-            # 调整布局以确保标签可见
-            plt.tight_layout()
-            st.pyplot(fig)
+            # 添加数值标签
+            for i, (category, value) in enumerate(zip(categories, values)):
+                st.write(f"{category}: {value}")
         
         with col2:
             st.subheader("鱼类健康状况分布（饼图）")
-            fig, ax = plt.subplots(figsize=(8, 8))
-            wedges, texts, autotexts = ax.pie(values, labels=categories, autopct='%1.1f%%', startangle=90)
-            
-            # 设置饼图标签样式
-            for text in texts:
-                text.set_fontsize(10)
-            for autotext in autotexts:
-                autotext.set_fontsize(10)
-                autotext.set_color('white')
-                autotext.set_weight('bold')
-            
-            ax.axis('equal')  # 保持圆形
-            plt.tight_layout()
-            st.pyplot(fig)
-            
+            # 使用 Streamlit 的 plotly 图表
+            try:
+                import plotly.express as px
+                fig = px.pie(
+                    values=values, 
+                    names=categories,
+                    title='鱼类健康状况分布'
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            except ImportError:
+                st.info("饼图需要 plotly 库支持。请在 requirements.txt 中添加 'plotly>=5.15.0'")
+                
     except Exception as e:
         st.error(f"数据加载失败: {str(e)}")
-        st.info("请确保data.xlsx文件存在于当前目录中")
+        st.info("请确保 data.xlsx 文件存在于当前目录中")
 
 elif page == "问答助手":
     st.markdown('<h1 class="main-header">问答助手</h1>', unsafe_allow_html=True)
@@ -275,7 +255,7 @@ elif page == "问答助手":
                     st.markdown(reply)
                     st.session_state.messages.append({"role": "assistant", "content": reply})
     
-    # 重置会话按钮 - 使用正确的Streamlit方法
+    # 重置会话按钮
     if st.button("重置会话"):
         st.session_state.messages = []
-        st.rerun()  # 使用 st.rerun() 而不是 st.experimental_rerun()
+        st.rerun()
