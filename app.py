@@ -5,10 +5,18 @@ import numpy as np
 from datetime import datetime
 import requests
 import json
+import os
 
-# 设置中文字体支持
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+# 检查是否在 Streamlit Cloud 上运行
+ON_STREAMLIT_CLOUD = os.getenv('IS_STREAMLIT_CLOUD') is not None
+
+# 设置中文字体支持 - 仅当不在 Streamlit Cloud 上运行时才设置
+if not ON_STREAMLIT_CLOUD:
+    try:
+        plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+        plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+    except:
+        pass  # 如果字体设置失败，继续执行
 
 # 设置页面配置
 st.set_page_config(
@@ -73,7 +81,10 @@ if page == "欢迎":
     st.markdown('<p class="sub-header">基于深度学习和生成式人工智能的多维度鱼类养殖助手</p>', unsafe_allow_html=True)
     
     # 显示图片
-    st.image("5fee78b75940ba154c648cdd715ec0d0.jpg", use_column_width=True)
+    try:
+        st.image("5fee78b75940ba154c648cdd715ec0d0.jpg", use_column_width=True)
+    except:
+        st.info("图片加载失败，请确保图片文件存在")
     
     # 功能简介
     st.markdown("### 功能介绍")
